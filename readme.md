@@ -23,7 +23,7 @@
 Если вы используете `Python 3`, у вас уже установлен модуль [venv](https://docs.python.org/3/library/venv.html) в стандартной библиотеке.
 
 ### Запуск проекта
-- Клонировать проект командой: git clone `https://github.com/`
+- Клонировать проект командой: git clone `https://github.com/iolshn04/tg_bot.git`
 - создать файл `.env` вида:
 
     BOT_TOKEN= "ваш бот токен"<br>
