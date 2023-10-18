@@ -6,7 +6,7 @@ from config_data.config import RAPID_API_KEY
 def city_found(city):
     url = "https://hotels4.p.rapidapi.com/locations/v3/search"
 
-    querystring = {"q":city, "locale": "en_US", "langid": "1033", "siteid": "300000001"}
+    querystring = {"q": city, "locale": "en_US", "langid": "1033", "siteid": "300000001"}
 
     headers = {
         "X-RapidAPI-Key": RAPID_API_KEY,
@@ -16,13 +16,15 @@ def city_found(city):
     cities = {}
 
     response = requests.get(url, headers=headers, params=querystring)
-    data = response.json()
-    for i_elem in data['sr']:
-        if i_elem['type'] == "CITY" or i_elem['type'] == "NEIGHBORHOOD":
-            cities[i_elem['gaiaId']] = i_elem['regionNames']['fullName']
+    if response.status_code == 200:
+        data = response.json()
+        for i_elem in data['sr']:
+            if i_elem['type'] == "CITY" or i_elem['type'] == "NEIGHBORHOOD":
+                cities[i_elem['gaiaId']] = i_elem['regionNames']['fullName']
 
-    return cities
-
+        return cities
+    else:
+        raise LookupError('Запрос пуст...')
 # with open('file.json', 'w', encoding='utf-8') as file:
 #     json.dump(response.json(), file, indent=4, ensure_ascii=False)
 

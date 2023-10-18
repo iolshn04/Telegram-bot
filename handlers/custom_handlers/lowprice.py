@@ -1,9 +1,11 @@
 from keyboards.inline.city_keyboard import city_markup
 from loader import bot
-from telebot.types import Message, CallbackQuery
+import json
+from telebot.types import Message, CallbackQuery, InputMediaPhoto
 from states.person_info import PersonInfoState
 from utils.city_founding import city_found
-from utils.hotels_founding import hotel_found
+from utils.hotel_detail import hotel_detail
+from utils.hotels_founding import *
 
 
 @bot.message_handler(commands=['lowprice'])
@@ -52,9 +54,6 @@ def children_count(message: Message):
         with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
             data['children_count'] = message.text
 
-            # for i in range(int(data['children_count'])):
-            #     bot.send_message(message.from_user.id, f'Введите возраст {i}-го ребенка: ')
-            #     data['children'] = [{'age': message.text}]
         count_age = int(data['children_count'])
         if count_age == 0:
             bot.set_state(message.from_user.id, PersonInfoState.hotels_quantity, message.chat.id)
@@ -63,11 +62,11 @@ def children_count(message: Message):
         elif count_age == 1:
             text_count = 'вашего ребенка'
             bot.set_state(message.from_user.id, PersonInfoState.children_age, message.chat.id)
-            bot.send_message(message.from_user.id, f'Введите возвраст {count_age} {text_count} через пробел:')
+            bot.send_message(message.from_user.id, f'Введите возвраст {count_age} {text_count}:')
         else:
             text_count = 'ваших детей'
             bot.set_state(message.from_user.id, PersonInfoState.children_age, message.chat.id)
-            bot.send_message(message.from_user.id, f'Введите возвраст {count_age} {text_count} через пробел:')
+            bot.send_message(message.from_user.id, f'Введите возраст {count_age} {text_count} через пробел:')
     else:
         bot.send_message(message.from_user.id, 'Количество может быть только числом больше или равно 0')
 
@@ -123,5 +122,30 @@ def check_out(message: Message):
     with bot.retrieve_data(message.from_user.id, message.chat.id) as data:
         date = message.text.split('.')
         data['check_out_date'] = {'day': int(date[0]), 'month': int(date[1]), 'year': int(date[2])}
-    hotels = hotel_found(data)
-    print(hotels)
+    print(data)
+
+    hotel = hotel_found(data)
+    if hotel.status_code == 200:
+        hotels = hotel.json()
+        if 'errors' in hotels:
+            bot.send_message(message.from_user.id, 'Отелей с такими параметрами не найдено')
+        else:
+            for i_elem in hotels['data']['propertySearch']["properties"][:data['hotel_count']]:
+                name_hotel = i_elem['name']
+                id_hotel = i_elem['id']
+                period = i_elem['price']['priceMessages'][1]['value']
+                score = i_elem['reviews']['score']
+                price = i_elem['price']['options'][0]['formattedDisplayPrice']
+                total_price = i_elem['price']['displayMessages'][1]['lineItems'][0]['value']
+
+                text = f'Название отеля: {name_hotel}\nРейтинг отеля: {score}\nПериод: {period}\n' \
+                       f'Цена за ночь: {price}\nВсего за период: {total_price}'
+
+                photos_hotel = hotel_detail(id_hotel, data['photo_count'])
+                media_group = []
+                for num, url in enumerate(photos_hotel):
+                    media_group.append(InputMediaPhoto(media=url, caption=text if num == 0 else ''))
+
+                bot.send_media_group(message.from_user.id, media=media_group)
+    else:
+        bot.send_message(message.from_user.id, 'Отелей с такими параметрами не найдено')
