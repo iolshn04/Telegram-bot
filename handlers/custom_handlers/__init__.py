@@ -1,3 +1,3 @@
 from . import hello_world
 from . import survey
-from . import lowprice
+from . import commands_bot
