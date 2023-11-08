@@ -39,7 +39,6 @@ def cal(c):
             with bot.retrieve_data(c.from_user.id, c.message.chat.id) as data:
                 data['check_out_date'] = {'day': result.day, 'month': result.month, 'year': result.year}
                 data['departure'] = result
-                print(data)
                 bot.set_state(c.from_user.id, PersonInfoState.hotels_quantity, c.message.chat.id)
                 bot.send_message(c.from_user.id, 'Введите кол-во выводимых отелей (не больше 25):')
             count = 1

@@ -6,7 +6,7 @@ from config_data.config import RAPID_API_KEY
 from utils.hotel_detail import hotel_detail
 
 
-def hotel_found(hotels, sort):
+def hotel_found(hotels):
     url = "https://hotels4.p.rapidapi.com/properties/v2/list"
 
     payload = {
@@ -33,7 +33,7 @@ def hotel_found(hotels, sort):
         ],
         "resultsStartingIndex": 0,
         "resultsSize": 200,
-        "sort": sort
+        "sort": "PRICE_LOW_TO_HIGH"
     }
     headers = {
         "content-type": "application/json",
